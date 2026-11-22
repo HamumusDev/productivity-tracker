@@ -1,0 +1,69 @@
+# VS Code + REST Client kiterjesztes (humao.rest-client).
+# Minden ### fole megjelenik egy "Send Request" link.
+
+@host = http://localhost:3000
+
+
+### Regisztracio
+# A valaszban az email kisbetus, mert a zod transform normalizalja.
+# passwordHash nincs benne: a use case visszateresi tipusa nem tartalmazza.
+POST {{host}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "Boldi@Example.com",
+  "password": "nagyontitkos123"
+}
+
+
+### Ugyanaz az email megint -> 409 EMAIL_ALREADY_REGISTERED
+# Az egyedisseget a users_email_lower_uq index garantalja, nem egy
+# elozetes ellenorzes. Ezert nincs versenyhelyzet ket egyideju keres kozott.
+POST {{host}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "boldi@example.com",
+  "password": "nagyontitkos123"
+}
+
+
+### Nagybetus valtozat is 409 -> a lower(email) index miatt
+POST {{host}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "BOLDI@EXAMPLE.COM",
+  "password": "nagyontitkos123"
+}
+
+
+### Tul rovid jelszo -> 400 VALIDATION_FAILED
+# A details tombben szerepelnie kell a "password" mezonek.
+POST {{host}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "masik@example.com",
+  "password": "rovid"
+}
+
+
+### Ervenytelen email -> 400 VALIDATION_FAILED
+POST {{host}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "nem-email",
+  "password": "nagyontitkos123"
+}
+
+
+### Ket hiba egyszerre -> a details tombben KETTO elem lesz
+POST {{host}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "nem-email",
+  "password": "rovid"
+}

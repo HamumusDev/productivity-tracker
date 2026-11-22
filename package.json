@@ -1,0 +1,6 @@
+{
+  "name": "productivity-tracker",
+  "private": true,
+  "workspaces": ["apps/*", "packages/*"],
+  "engines": { "node": ">=24" }
+}
